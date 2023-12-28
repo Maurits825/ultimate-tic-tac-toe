@@ -1,2 +1,2 @@
-# Example
-An example greeter plugin
+# Ultimate tic-tac-toe
+Play ultimate tic-tac-toe in game!

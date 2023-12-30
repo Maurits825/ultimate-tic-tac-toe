@@ -31,20 +31,19 @@ public class UltimateTicTacToeOverlay extends OverlayPanel
 
 	@Override
 	public Dimension render(Graphics2D graphics) {
-		String title;
-		Color color;
-		title = "Ultimate tic-tac-toe";
-		color = Color.GREEN;
+		String title = "Ultimate tic-tac-toe";
+		Color color = Color.GREEN;
 
 		panelComponent.getChildren().add(TitleComponent.builder()
 			.text(title)
 			.color(color)
 			.build());
 
-//		panelComponent.getChildren().add(LineComponent.builder()
-//			.left("Score:")
-//			.right(String.format("%d", plugin.getScore()))
-//			.build());
+		String playerMove = plugin.getModel().getCurrentState() == UltimateTicTacToeModel.State.PLAYER1_MOVE ? "Player 1" : "Player 2";
+		panelComponent.getChildren().add(LineComponent.builder()
+			.left("Move:")
+			.right(playerMove)
+			.build());
 
 		return super.render(graphics);
 	}

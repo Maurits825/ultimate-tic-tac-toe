@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
+import net.runelite.api.Point;
 import net.runelite.api.RuneLiteObject;
 import net.runelite.api.coords.WorldPoint;
 
@@ -48,9 +49,19 @@ public class UltimateTicTacToeView
 		spawnValidTiles(topLeftCorner);
 	}
 
-	public void drawPlayerOneMove(Color playerOneColor, WorldPoint worldPoint)
+	public void drawValidTiles(List<Point> validPoints)
 	{
-		playerOneTiles.add(rlObjController.spawnRuneLiteObject(playerMoveTileId, worldPoint, playerOneColor, 33));
+		hideAllValidTiles();
+
+		for (Point point : validPoints)
+		{
+			validTiles[point.getX()][point.getY()].setActive(true);
+		}
+	}
+
+	public void drawPlayerMove(Color color, WorldPoint worldPoint)
+	{
+		playerOneTiles.add(rlObjController.spawnRuneLiteObject(playerMoveTileId, worldPoint, color, 33));
 	}
 
 	public void clearAll()
@@ -62,6 +73,22 @@ public class UltimateTicTacToeView
 				obj.setActive(false);
 			}
 			runeLiteObjectList.clear();
+		}
+
+		hideAllValidTiles();
+	}
+
+	private void hideAllValidTiles()
+	{
+		for (int x = 0; x < GRID_SIZE; x++)
+		{
+			for (int y = 0; y < GRID_SIZE; y++)
+			{
+				if (validTiles[x][y] != null)
+				{
+					validTiles[x][y].setActive(false);
+				}
+			}
 		}
 	}
 

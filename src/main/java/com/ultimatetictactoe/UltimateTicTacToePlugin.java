@@ -2,6 +2,7 @@ package com.ultimatetictactoe;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -38,6 +39,10 @@ public class UltimateTicTacToePlugin extends Plugin
 	private UltimateTicTacToeView view;
 
 	@Inject
+	@Getter //TODO maybe just make a function, we need the overlay to access *this* model, maybe @singleton on model?
+	private UltimateTicTacToeModel model;
+
+	@Inject
 	private RuneliteObjectController runeliteObjectController;
 
 	@Inject
@@ -65,7 +70,6 @@ public class UltimateTicTacToePlugin extends Plugin
 			resetGame();
 			return true;
 		});
-
 	}
 
 	@Subscribe
@@ -81,14 +85,24 @@ public class UltimateTicTacToePlugin extends Plugin
 				// get the tile of this player now, this is the location of the move
 				// validate move -> some feedback?
 				// play the move
-				log.debug("Spawning player one obj");
-				view.drawPlayerOneMove(config.playerOneColor(), client.getLocalPlayer().getWorldLocation());
+				boolean isValid = model.playerOneMove(client.getLocalPlayer().getWorldLocation());
+				if (isValid)
+				{
+					log.debug("Player 1 move!");
+					view.drawPlayerMove(config.playerOneColor(), client.getLocalPlayer().getWorldLocation());
+					view.drawValidTiles(model.getValidTiles());
+				}
 			}
 
 			if (event.getName().equals(config.playerTwo()) && message.contains(playerTwoMove))
 			{
-				//player two move
-
+				boolean isValid = model.playerTwoMove(client.getLocalPlayer().getWorldLocation());
+				if (isValid)
+				{
+					log.debug("Player 2 move!");
+					view.drawPlayerMove(config.playerTwoColor(), client.getLocalPlayer().getWorldLocation());
+					view.drawValidTiles(model.getValidTiles());
+				}
 			}
 
 			if (event.getName().equals(config.playerOne()) && message.contains("s"))
@@ -127,7 +141,9 @@ public class UltimateTicTacToePlugin extends Plugin
 
 	private void startGame()
 	{
+		model.initialize(client.getLocalPlayer().getWorldLocation());
 		view.initialize(client.getLocalPlayer().getWorldLocation());
+		view.drawValidTiles(model.getValidTiles());
 	}
 
 	private void resetGame()

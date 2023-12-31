@@ -2,8 +2,8 @@ package com.ultimatetictactoe;
 
 import static com.ultimatetictactoe.UltimateTicTacToeConstant.GRID_OFFSET;
 import static com.ultimatetictactoe.UltimateTicTacToeConstant.GRID_SIZE;
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.SMALL_GRID_SIZE;
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
@@ -75,9 +75,22 @@ public class UltimateTicTacToeView
 		playerTwoTiles[point.getX()][point.getY()].setActive(true);
 	}
 
-	public void drawBigBoardWin(int[][] bigBoard)
+	public void drawPlayerOneWins(List<Point> gridWins)
 	{
+		for (Point gridPoint : gridWins)
+		{
+			setActivePlayerGrid(playerTwoTiles, gridPoint, false);
+			setActivePlayerGrid(playerOneTiles, gridPoint, true);
+		}
+	}
 
+	public void drawPlayerTwoWins(List<Point> gridWins)
+	{
+		for (Point gridPoint : gridWins)
+		{
+			setActivePlayerGrid(playerOneTiles, gridPoint, false);
+			setActivePlayerGrid(playerTwoTiles, gridPoint, true);
+		}
 	}
 
 	public void clearAll()
@@ -93,6 +106,17 @@ public class UltimateTicTacToeView
 						runeLiteObjectList[x][y].setActive(false);
 					}
 				}
+			}
+		}
+	}
+
+	private void setActivePlayerGrid(RuneLiteObject[][] playerTiles, Point gridPoint, boolean setActive)
+	{
+		for (int x = 0; x < SMALL_GRID_SIZE; x++)
+		{
+			for (int y = 0; y < SMALL_GRID_SIZE; y++)
+			{
+				playerTiles[gridPoint.getX() * SMALL_GRID_SIZE + x][gridPoint.getY() * SMALL_GRID_SIZE + y].setActive(setActive);
 			}
 		}
 	}

@@ -22,7 +22,7 @@ public class RuneliteObjectController
 		);
 	}
 
-	public RuneLiteObject spawnRuneLiteObject(int objectId, WorldPoint point,  boolean setActive, Color color, int colorIndex)
+	public RuneLiteObject spawnRuneLiteObject(int objectId, WorldPoint point, boolean setActive, Color color, int colorIndex)
 	{
 		return spawnRuneLiteObject(
 			objectId, point, setActive, 0, 0, 0, color, colorIndex, -1

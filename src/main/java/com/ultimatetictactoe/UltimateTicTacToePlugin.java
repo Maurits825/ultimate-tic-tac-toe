@@ -58,18 +58,14 @@ public class UltimateTicTacToePlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		overlayManager.add(overlay);
+		resetGame();
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
 		overlayManager.remove(overlay);
-
-		clientThread.invokeLater(() ->
-		{
-			resetGame();
-			return true;
-		});
+		resetGame();
 	}
 
 	@Subscribe
@@ -79,26 +75,30 @@ public class UltimateTicTacToePlugin extends Plugin
 		{
 			String message = Text.sanitize(Text.removeTags(event.getMessage())).toLowerCase();
 			WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
+			boolean isValidMove = false;
 			if (event.getName().equals(config.playerOne()) && message.contains(PLAYER1_MOVE_MESSAGE))
 			{
-				boolean isValid = model.playerOneMove(playerLocation);
-				if (isValid)
+				isValidMove = model.playerOneMove(playerLocation);
+				if (isValidMove)
 				{
 					view.drawPlayerOneMove(playerLocation);
-					view.drawValidTiles(model.getValidTiles());
-					//todo like view.drawBigBoardWin or something?
+				}
+			}
+			else if (event.getName().equals(config.playerTwo()) && message.contains(PLAYER2_MOVE_MESSAGE))
+			{
+				//TODO have to get location of other player here?
+				isValidMove = model.playerTwoMove(playerLocation);
+				if (isValidMove)
+				{
+					view.drawPlayerTwoMove(playerLocation);
 				}
 			}
 
-			if (event.getName().equals(config.playerTwo()) && message.contains(PLAYER2_MOVE_MESSAGE))
+			if (isValidMove)
 			{
-				//TODO have to get location of other player here?
-				boolean isValid = model.playerTwoMove(playerLocation);
-				if (isValid)
-				{
-					view.drawPlayerTwoMove(playerLocation);
-					view.drawValidTiles(model.getValidTiles());
-				}
+				view.drawValidTiles(model.getValidTiles());
+				view.drawPlayerOneWins(model.getPlayerOneWins());
+				view.drawPlayerTwoWins(model.getPlayerTwoWins());
 			}
 
 			if (event.getName().equals(config.playerOne()) && message.contains("s"))
@@ -127,11 +127,7 @@ public class UltimateTicTacToePlugin extends Plugin
 	{
 		if (configChanged.getGroup().equals("ultimatetictactoe"))
 		{
-			clientThread.invokeLater(() ->
-			{
-				resetGame();
-				return true;
-			});
+			resetGame();
 		}
 	}
 
@@ -145,7 +141,12 @@ public class UltimateTicTacToePlugin extends Plugin
 
 	private void resetGame()
 	{
-		view.clearAll();
+		model.reset();
+		clientThread.invokeLater(() ->
+		{
+			view.clearAll();
+			return true;
+		});
 	}
 
 	@Provides

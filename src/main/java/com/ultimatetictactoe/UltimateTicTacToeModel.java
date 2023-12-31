@@ -48,6 +48,12 @@ public class UltimateTicTacToeModel
 		currentGrid = null; //first move can be played anywhere
 	}
 
+	public void reset()
+	{
+		currentState = State.IDLE;
+		currentGrid = null;
+	}
+
 	public boolean playerOneMove(WorldPoint worldLocation)
 	{
 		return move(State.PLAYER1_MOVE, UltimateTicTacToeUtils.getGridPointFromWorld(worldLocation, topLeftCornerWorld));
@@ -84,6 +90,34 @@ public class UltimateTicTacToeModel
 		}
 
 		return validPoints;
+	}
+
+	public List<Point> getPlayerOneWins()
+	{
+		return getPlayerWins(PLAYER1_VALUE);
+	}
+
+	public List<Point> getPlayerTwoWins()
+	{
+		return getPlayerWins(PLAYER2_VALUE);
+	}
+
+	private List<Point> getPlayerWins(int playerValue)
+	{
+		List<Point> gridWinPoints = new ArrayList<>();
+		for (int x = 0; x < SMALL_GRID_SIZE; x++)
+		{
+			for (int y = 0; y < SMALL_GRID_SIZE; y++)
+			{
+				Point point = new Point(x, y);
+				if (bigBoard[x][y] == playerValue)
+				{
+					gridWinPoints.add(point);
+				}
+			}
+		}
+
+		return gridWinPoints;
 	}
 
 	private boolean move(State playerMove, Point point)
@@ -148,8 +182,7 @@ public class UltimateTicTacToeModel
 		{
 			for (int y = 0; y < SMALL_GRID_SIZE; y++)
 			{
-				//x y switch here??
-				bigBoard[y][x] = getGridStatus(x, y);
+				bigBoard[x][y] = getGridStatus(x, y);
 			}
 		}
 	}

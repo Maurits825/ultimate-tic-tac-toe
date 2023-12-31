@@ -10,8 +10,10 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
 import net.runelite.api.RuneLiteObject;
+import net.runelite.api.Tile;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.ClientTick;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -75,38 +77,34 @@ public class UltimateTicTacToePlugin extends Plugin
 		{
 			String message = Text.sanitize(Text.removeTags(event.getMessage())).toLowerCase();
 			WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
-			boolean isValidMove = false;
 			if (event.getName().equals(config.playerOne()) && message.contains(PLAYER1_MOVE_MESSAGE))
 			{
-				isValidMove = model.playerOneMove(playerLocation);
-				if (isValidMove)
-				{
-					view.drawPlayerOneMove(playerLocation);
-				}
+				playerOneMove(playerLocation);
 			}
 			else if (event.getName().equals(config.playerTwo()) && message.contains(PLAYER2_MOVE_MESSAGE))
 			{
 				//TODO have to get location of other player here?
-				isValidMove = model.playerTwoMove(playerLocation);
-				if (isValidMove)
-				{
-					view.drawPlayerTwoMove(playerLocation);
-				}
+				playerTwoMove(playerLocation);
 			}
+		}
+	}
 
-			if (isValidMove)
-			{
-				view.drawValidTiles(model.getValidTiles());
-				view.drawPlayerOneWins(model.getPlayerOneWins());
-				view.drawPlayerTwoWins(model.getPlayerTwoWins());
-			}
+	@Subscribe
+	public void onClientTick(ClientTick clientTick)
+	{
+		if (!client.isMenuOpen())
+		{
+			client.createMenuEntry(-1)
+				.setOption("Play")
+				.setTarget(PLAYER1_MOVE_MESSAGE)
+				.setType(MenuAction.RUNELITE)
+				.onClick(c -> playerOneMove(client.getSelectedSceneTile().getWorldLocation()));
 
-			if (event.getName().equals(config.playerOne()) && message.contains("s"))
-			{
-				RuneLiteObject obj = runeliteObjectController.spawnRuneLiteObject(config.customModelId(), client.getLocalPlayer().getWorldLocation());
-				obj.setAnimation(client.loadAnimation(9496));
-				obj.setShouldLoop(true);
-			}
+			client.createMenuEntry(-2)
+				.setOption("Play")
+				.setTarget(PLAYER2_MOVE_MESSAGE)
+				.setType(MenuAction.RUNELITE)
+				.onClick(c -> playerTwoMove(client.getSelectedSceneTile().getWorldLocation()));
 		}
 	}
 
@@ -147,6 +145,33 @@ public class UltimateTicTacToePlugin extends Plugin
 			view.clearAll();
 			return true;
 		});
+	}
+
+	private void playerOneMove(WorldPoint playerLocation)
+	{
+		boolean isValidMove = model.playerOneMove(playerLocation);
+		if (isValidMove)
+		{
+			view.drawPlayerOneMove(playerLocation);
+			updateViewPostMove();
+		}
+	}
+
+	private void playerTwoMove(WorldPoint playerLocation)
+	{
+		boolean isValidMove = model.playerTwoMove(playerLocation);
+		if (isValidMove)
+		{
+			view.drawPlayerTwoMove(playerLocation);
+			updateViewPostMove();
+		}
+	}
+
+	private void updateViewPostMove()
+	{
+		view.drawValidTiles(model.getValidTiles());
+		view.drawPlayerOneWins(model.getPlayerOneWins());
+		view.drawPlayerTwoWins(model.getPlayerTwoWins());
 	}
 
 	@Provides

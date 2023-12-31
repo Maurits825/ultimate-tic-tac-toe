@@ -47,14 +47,4 @@ public interface UltimateTicTacToeConfig extends Config
 	{
 		return Color.BLUE;
 	}
-
-	@ConfigItem(
-		keyName = "modelId",
-		name = "Model id",
-		description = "Model id"
-	)
-	default int customModelId()
-	{
-		return 1;
-	}
 }

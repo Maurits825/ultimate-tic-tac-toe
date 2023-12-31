@@ -1,5 +1,7 @@
 package com.ultimatetictactoe;
 
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER1_MOVE_MESSAGE;
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER2_MOVE_MESSAGE;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -19,7 +21,8 @@ public class UltimateTicTacToeOverlay extends OverlayPanel
 	private UltimateTicTacToeConfig config;
 
 	@Inject
-	UltimateTicTacToeOverlay(UltimateTicTacToePlugin plugin, Client client, UltimateTicTacToeConfig config) {
+	UltimateTicTacToeOverlay(UltimateTicTacToePlugin plugin, Client client, UltimateTicTacToeConfig config)
+	{
 		super(plugin);
 		this.client = client;
 		this.plugin = plugin;
@@ -30,7 +33,8 @@ public class UltimateTicTacToeOverlay extends OverlayPanel
 	}
 
 	@Override
-	public Dimension render(Graphics2D graphics) {
+	public Dimension render(Graphics2D graphics)
+	{
 		String title = "Ultimate tic-tac-toe";
 		Color color = Color.GREEN;
 
@@ -39,7 +43,18 @@ public class UltimateTicTacToeOverlay extends OverlayPanel
 			.color(color)
 			.build());
 
-		String playerMove = plugin.getModel().getCurrentState() == UltimateTicTacToeModel.State.PLAYER1_MOVE ? "Player 1" : "Player 2";
+		String playerMove = "-";
+		switch (plugin.getModel().getCurrentState())
+		{
+			case PLAYER1_MOVE:
+				playerMove = "Player 1 - " + PLAYER1_MOVE_MESSAGE;
+				break;
+			case PLAYER2_MOVE:
+				playerMove = "Player 2 - " + PLAYER2_MOVE_MESSAGE;
+				break;
+			default:
+				break;
+		}
 		panelComponent.getChildren().add(LineComponent.builder()
 			.left("Move:")
 			.right(playerMove)

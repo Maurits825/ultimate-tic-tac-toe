@@ -1,5 +1,8 @@
 package com.ultimatetictactoe;
 
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.GRID_OFFSET;
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.GRID_SIZE;
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.SMALL_GRID_SIZE;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -8,23 +11,28 @@ import net.runelite.api.coords.WorldPoint;
 
 public class UltimateTicTacToeModel
 {
-	//TODO have a data/constant class so view also uses this
-	private final int GRID_SIZE = 9;
-	private final int GRID_OFFSET = 5;
-
 	enum State
 	{
+		IDLE,
 		PLAYER1_WIN,
 		PLAYER2_WIN,
 		PLAYER1_MOVE,
 		PLAYER2_MOVE,
 	}
 
-	//0 is empty, 1 is player, 2 is player 2?
-	private int[][] board;
+	//TODO enums??, or better way
+	private final int EMPTY_VALUE = 0;
+	private final int PLAYER1_VALUE = 1;
+	private final int PLAYER1_WIN_VALUE = (int) Math.pow(PLAYER1_VALUE, SMALL_GRID_SIZE);
+	private final int PLAYER2_VALUE = 2;
+	private final int PLAYER2_WIN_VALUE = (int) Math.pow(PLAYER2_VALUE, SMALL_GRID_SIZE);
+	private final int DRAW_VALUE = 3;
+
+	private int[][] smallBoard;
+	private int[][] bigBoard;
 
 	@Getter
-	private State currentState;
+	private State currentState = State.IDLE;
 	private Point currentGrid;
 
 	private Point topLeftCorner;
@@ -36,9 +44,11 @@ public class UltimateTicTacToeModel
 			.dy(GRID_OFFSET - 1);
 		topLeftCorner = new Point(topLeftCornerWorld.getX(), topLeftCornerWorld.getY());
 
-		board = new int[GRID_SIZE][GRID_SIZE];
+		smallBoard = new int[GRID_SIZE][GRID_SIZE];
+		bigBoard = new int[SMALL_GRID_SIZE][SMALL_GRID_SIZE];
+
 		currentState = State.PLAYER1_MOVE;
-		currentGrid = null; //first move can be played anywhere?
+		currentGrid = null; //first move can be played anywhere
 	}
 
 	public boolean playerOneMove(WorldPoint worldLocation)
@@ -89,21 +99,17 @@ public class UltimateTicTacToeModel
 		//play the move
 		if (currentState == State.PLAYER1_MOVE)
 		{
-			board[point.getX()][point.getY()] = 1;
+			smallBoard[point.getX()][point.getY()] = PLAYER1_VALUE;
 			currentState = State.PLAYER2_MOVE;
 		}
 		else
 		{
-			board[point.getX()][point.getY()] = 2;
+			smallBoard[point.getX()][point.getY()] = PLAYER2_VALUE;
 			currentState = State.PLAYER1_MOVE;
 		}
 
-		if (currentGrid == null)
-		{
-			currentGrid = new Point(point.getX() / 3, point.getY() / 3);
-		}
-
-		currentGrid = new Point(point.getX() - (currentGrid.getX() * 3), point.getY() - (currentGrid.getY() * 3));
+		updateBigBoard();
+		updateCurrentGrid(point);
 		return true;
 	}
 
@@ -114,25 +120,117 @@ public class UltimateTicTacToeModel
 			return false;
 		}
 
-		//current grid is null -> first move -> any point is valid
+		if (smallBoard[point.getX()][point.getY()] != EMPTY_VALUE)
+		{
+			return false;
+		}
+
+		Point gridLocation = new Point(point.getX() / 3, point.getY() / 3);
+
+		if (bigBoard[gridLocation.getX()][gridLocation.getY()] != EMPTY_VALUE)
+		{
+			return false;
+		}
+
 		if (currentGrid == null)
 		{
 			return true;
 		}
 
-		//check if move is in current grid
-		Point gridLocation = new Point(point.getX() / 3, point.getY() / 3);
 		if (!gridLocation.equals(currentGrid))
 		{
 			return false;
 		}
 
-		if (board[point.getX()][point.getY()] != 0)
+		return true;
+	}
+
+	private void updateBigBoard()
+	{
+		for (int bigX = 0; bigX < SMALL_GRID_SIZE; bigX++)
 		{
-			return false;
+			for (int bigY = 0; bigY < SMALL_GRID_SIZE; bigY++)
+			{
+				bigBoard[bigX][bigY] = getGridStatus(bigX, bigY);
+			}
+		}
+	}
+
+	//TODO surely it can be cleaner
+	private int getGridStatus(int gridX, int gridY)
+	{
+		int startX = gridX * SMALL_GRID_SIZE;
+		int startY = gridY * SMALL_GRID_SIZE;
+
+		boolean isGridFilled = true;
+
+		//check rol & col
+		for (int x = 0; x < SMALL_GRID_SIZE; x++)
+		{
+			int rowProduct = 1;
+			int colProduct = 1;
+			for (int y = 0; y < SMALL_GRID_SIZE; y++)
+			{
+				rowProduct *= smallBoard[startY + y][startX + x];
+				colProduct *= smallBoard[startX + x][startY + y];
+			}
+
+			if (rowProduct == PLAYER1_WIN_VALUE || colProduct == PLAYER1_WIN_VALUE)
+			{
+				return PLAYER1_VALUE;
+			}
+
+			if (rowProduct == PLAYER2_WIN_VALUE || colProduct == PLAYER2_WIN_VALUE)
+			{
+				return PLAYER2_VALUE;
+			}
+
+			if (rowProduct == EMPTY_VALUE || colProduct == EMPTY_VALUE) //this only works for EMPTY_VALUE = 0
+			{
+				isGridFilled = false;
+			}
 		}
 
-		return true;
+		//check diag
+		int diag1Product = 1;
+		int diag2Product = 1;
+		for (int i = 0; i < SMALL_GRID_SIZE; i++)
+		{
+			diag1Product *= smallBoard[startX + i][startY + i];
+			diag2Product *= smallBoard[startX + SMALL_GRID_SIZE - 1 - i][startY + i];
+		}
+
+		if (diag1Product == PLAYER1_WIN_VALUE || diag2Product == PLAYER1_WIN_VALUE)
+		{
+			return PLAYER1_VALUE;
+		}
+
+		if (diag1Product == PLAYER2_WIN_VALUE || diag2Product == PLAYER2_WIN_VALUE)
+		{
+			return PLAYER2_VALUE;
+		}
+
+		if (diag1Product == EMPTY_VALUE || diag2Product == EMPTY_VALUE)
+		{
+			isGridFilled = false;
+		}
+
+		return isGridFilled ? DRAW_VALUE : EMPTY_VALUE;
+	}
+
+	private void updateCurrentGrid(Point point)
+	{
+		if (currentGrid == null)
+		{
+			currentGrid = new Point(point.getX() / 3, point.getY() / 3);
+		}
+
+		currentGrid = new Point(point.getX() - (currentGrid.getX() * 3), point.getY() - (currentGrid.getY() * 3));
+
+		if (bigBoard[currentGrid.getX()][currentGrid.getY()] != EMPTY_VALUE)
+		{
+			currentGrid = null;
+		}
 	}
 
 	private Point getGridCoordinates(WorldPoint worldPoint)

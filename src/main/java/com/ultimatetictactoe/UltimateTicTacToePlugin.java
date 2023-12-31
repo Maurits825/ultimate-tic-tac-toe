@@ -1,6 +1,8 @@
 package com.ultimatetictactoe;
 
 import com.google.inject.Provides;
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER1_MOVE_MESSAGE;
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER2_MOVE_MESSAGE;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +28,6 @@ import net.runelite.client.util.Text;
 )
 public class UltimateTicTacToePlugin extends Plugin
 {
-	private final String playerOneMove = "x";
-	private final String playerTwoMove = "o";
-
 	@Inject
 	private UltimateTicTacToeConfig config;
 
@@ -39,7 +38,7 @@ public class UltimateTicTacToePlugin extends Plugin
 	private UltimateTicTacToeView view;
 
 	@Inject
-	@Getter //TODO maybe just make a function, we need the overlay to access *this* model, maybe @singleton on model?
+	@Getter
 	private UltimateTicTacToeModel model;
 
 	@Inject
@@ -78,28 +77,21 @@ public class UltimateTicTacToePlugin extends Plugin
 		if (event.getType() == ChatMessageType.PUBLICCHAT)
 		{
 			String message = Text.sanitize(Text.removeTags(event.getMessage())).toLowerCase();
-			if (event.getName().equals(config.playerOne()) && message.contains(playerOneMove))
+			if (event.getName().equals(config.playerOne()) && message.contains(PLAYER1_MOVE_MESSAGE))
 			{
-				//player one move
-				//TODO
-				// get the tile of this player now, this is the location of the move
-				// validate move -> some feedback?
-				// play the move
 				boolean isValid = model.playerOneMove(client.getLocalPlayer().getWorldLocation());
 				if (isValid)
 				{
-					log.debug("Player 1 move!");
 					view.drawPlayerMove(config.playerOneColor(), client.getLocalPlayer().getWorldLocation());
 					view.drawValidTiles(model.getValidTiles());
 				}
 			}
 
-			if (event.getName().equals(config.playerTwo()) && message.contains(playerTwoMove))
+			if (event.getName().equals(config.playerTwo()) && message.contains(PLAYER2_MOVE_MESSAGE))
 			{
 				boolean isValid = model.playerTwoMove(client.getLocalPlayer().getWorldLocation());
 				if (isValid)
 				{
-					log.debug("Player 2 move!");
 					view.drawPlayerMove(config.playerTwoColor(), client.getLocalPlayer().getWorldLocation());
 					view.drawValidTiles(model.getValidTiles());
 				}
@@ -131,11 +123,11 @@ public class UltimateTicTacToePlugin extends Plugin
 	{
 		if (configChanged.getGroup().equals("ultimatetictactoe"))
 		{
-//			clientThread.invokeLater(() ->
-//			{
-//				runeliteObjectController.drawGrid(wallModelId, config.tileId(), client.getLocalPlayer().getWorldLocation());
-//				return true;
-//			});
+			clientThread.invokeLater(() ->
+			{
+				resetGame();
+				return true;
+			});
 		}
 	}
 

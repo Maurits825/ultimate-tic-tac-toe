@@ -1,5 +1,7 @@
 package com.ultimatetictactoe;
 
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.GRID_OFFSET;
+import static com.ultimatetictactoe.UltimateTicTacToeConstant.GRID_SIZE;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,9 +24,6 @@ public class UltimateTicTacToeView
 	private final int playerMoveTileId = 45488;
 
 	private final int validTileObjectId = 46441;
-
-	private final int GRID_SIZE = 9;
-	private final int GRID_OFFSET = 5;
 
 	private final List<RuneLiteObject> walls = new ArrayList<>();
 	private final List<RuneLiteObject> tiles = new ArrayList<>();

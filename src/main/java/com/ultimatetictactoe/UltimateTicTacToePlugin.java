@@ -10,6 +10,7 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
 import net.runelite.api.RuneLiteObject;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -77,22 +78,25 @@ public class UltimateTicTacToePlugin extends Plugin
 		if (event.getType() == ChatMessageType.PUBLICCHAT)
 		{
 			String message = Text.sanitize(Text.removeTags(event.getMessage())).toLowerCase();
+			WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
 			if (event.getName().equals(config.playerOne()) && message.contains(PLAYER1_MOVE_MESSAGE))
 			{
-				boolean isValid = model.playerOneMove(client.getLocalPlayer().getWorldLocation());
+				boolean isValid = model.playerOneMove(playerLocation);
 				if (isValid)
 				{
-					view.drawPlayerMove(config.playerOneColor(), client.getLocalPlayer().getWorldLocation());
+					view.drawPlayerOneMove(playerLocation);
 					view.drawValidTiles(model.getValidTiles());
+					//todo like view.drawBigBoardWin or something?
 				}
 			}
 
 			if (event.getName().equals(config.playerTwo()) && message.contains(PLAYER2_MOVE_MESSAGE))
 			{
-				boolean isValid = model.playerTwoMove(client.getLocalPlayer().getWorldLocation());
+				//TODO have to get location of other player here?
+				boolean isValid = model.playerTwoMove(playerLocation);
 				if (isValid)
 				{
-					view.drawPlayerMove(config.playerTwoColor(), client.getLocalPlayer().getWorldLocation());
+					view.drawPlayerTwoMove(playerLocation);
 					view.drawValidTiles(model.getValidTiles());
 				}
 			}
@@ -133,8 +137,9 @@ public class UltimateTicTacToePlugin extends Plugin
 
 	private void startGame()
 	{
-		model.initialize(client.getLocalPlayer().getWorldLocation());
-		view.initialize(client.getLocalPlayer().getWorldLocation());
+		WorldPoint playerLocation = client.getLocalPlayer().getWorldLocation();
+		model.initialize(playerLocation);
+		view.initialize(playerLocation, config.playerOneColor(), config.playerTwoColor());
 		view.drawValidTiles(model.getValidTiles());
 	}
 

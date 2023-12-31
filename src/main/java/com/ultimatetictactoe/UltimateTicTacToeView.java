@@ -16,8 +16,6 @@ public class UltimateTicTacToeView
 	@Inject
 	RuneliteObjectController rlObjController;
 
-	private final int wallModelId = 45818;
-
 	private final int tileObjectId1 = 45510;
 	private final int tileObjectId2 = 45432;
 
@@ -25,27 +23,34 @@ public class UltimateTicTacToeView
 
 	private final int validTileObjectId = 46441;
 
-	private final List<RuneLiteObject> walls = new ArrayList<>();
-	private final List<RuneLiteObject> tiles = new ArrayList<>();
+	private final RuneLiteObject[][] tiles = new RuneLiteObject[GRID_SIZE][GRID_SIZE];
 
-	private final List<RuneLiteObject> playerOneTiles = new ArrayList<>();
-	private final List<RuneLiteObject> playerTwoTiles = new ArrayList<>();
+	private final RuneLiteObject[][] playerOneTiles = new RuneLiteObject[GRID_SIZE][GRID_SIZE];
+	private final RuneLiteObject[][] playerTwoTiles = new RuneLiteObject[GRID_SIZE][GRID_SIZE];
 
 	private final RuneLiteObject[][] validTiles = new RuneLiteObject[GRID_SIZE][GRID_SIZE];
 
-	private final List<List<RuneLiteObject>> allRuneliteObjectList = Arrays.asList(walls, tiles, playerOneTiles, playerTwoTiles);
+	private final List<RuneLiteObject[][]> allRuneliteObjectList = Arrays.asList(tiles, playerOneTiles, playerTwoTiles, validTiles);
 
-	public void initialize(WorldPoint playerWorldPosition)
+	private WorldPoint topLeftCornerWorld;
+
+	private Color playerOneColor;
+	private Color playerTwoColor;
+
+	public void initialize(WorldPoint playerWorldPosition, Color playerOneColor, Color playerTwoColor)
 	{
+		this.playerOneColor = playerOneColor;
+		this.playerTwoColor = playerTwoColor;
+
 		clearAll();
 
-		WorldPoint topLeftCorner = playerWorldPosition
+		topLeftCornerWorld = playerWorldPosition
 			.dx(-GRID_OFFSET + 1)
 			.dy(GRID_OFFSET - 1);
 
-		//drawWalls(wallObjectId, playerWorldPosition);
-		drawTiles(topLeftCorner);
-		spawnValidTiles(topLeftCorner);
+		spawnTiles();
+		spawnValidTiles();
+		spawnPlayerMoveTiles();
 	}
 
 	public void drawValidTiles(List<Point> validPoints)
@@ -58,23 +63,38 @@ public class UltimateTicTacToeView
 		}
 	}
 
-	public void drawPlayerMove(Color color, WorldPoint worldPoint)
+	public void drawPlayerOneMove(WorldPoint worldPoint)
 	{
-		playerOneTiles.add(rlObjController.spawnRuneLiteObject(playerMoveTileId, worldPoint, color, 33));
+		Point point = UltimateTicTacToeUtils.getGridPointFromWorld(worldPoint, topLeftCornerWorld);
+		playerOneTiles[point.getX()][point.getY()].setActive(true);
+	}
+
+	public void drawPlayerTwoMove(WorldPoint worldPoint)
+	{
+		Point point = UltimateTicTacToeUtils.getGridPointFromWorld(worldPoint, topLeftCornerWorld);
+		playerTwoTiles[point.getX()][point.getY()].setActive(true);
+	}
+
+	public void drawBigBoardWin(int[][] bigBoard)
+	{
+
 	}
 
 	public void clearAll()
 	{
-		for (List<RuneLiteObject> runeLiteObjectList : allRuneliteObjectList)
+		for (RuneLiteObject[][] runeLiteObjectList : allRuneliteObjectList)
 		{
-			for (RuneLiteObject obj : runeLiteObjectList)
+			for (int x = 0; x < GRID_SIZE; x++)
 			{
-				obj.setActive(false);
+				for (int y = 0; y < GRID_SIZE; y++)
+				{
+					if (runeLiteObjectList[x][y] != null)
+					{
+						runeLiteObjectList[x][y].setActive(false);
+					}
+				}
 			}
-			runeLiteObjectList.clear();
 		}
-
-		hideAllValidTiles();
 	}
 
 	private void hideAllValidTiles()
@@ -91,34 +111,7 @@ public class UltimateTicTacToeView
 		}
 	}
 
-	private void drawWalls(int wallObjectId, WorldPoint playerWorldPosition)
-	{
-		WorldPoint wallStartPoint = playerWorldPosition
-			.dx(-GRID_OFFSET)
-			.dy(GRID_OFFSET);
-
-		for (int x = 0; x < GRID_SIZE + 2; x++)
-		{
-			walls.add(rlObjController.spawnRuneLiteObject(wallObjectId, wallStartPoint.dx(x)));
-		}
-
-		for (int x = 0; x < GRID_SIZE + 2; x++)
-		{
-			walls.add(rlObjController.spawnRuneLiteObject(wallObjectId, wallStartPoint.dx(x).dy(-GRID_OFFSET * 2)));
-		}
-
-		for (int y = 0; y < GRID_SIZE; y++)
-		{
-			walls.add(rlObjController.spawnRuneLiteObject(wallObjectId, wallStartPoint.dy(-y - 1)));
-		}
-
-		for (int y = 0; y < GRID_SIZE; y++)
-		{
-			walls.add(rlObjController.spawnRuneLiteObject(wallObjectId, wallStartPoint.dy(-y - 1).dx(GRID_OFFSET * 2)));
-		}
-	}
-
-	private void drawTiles(WorldPoint topLeftCorner)
+	private void spawnTiles()
 	{
 		int tileObjectId;
 		for (int x = 0; x < GRID_SIZE; x++)
@@ -133,19 +126,34 @@ public class UltimateTicTacToeView
 				{
 					tileObjectId = tileObjectId2;
 				}
-				tiles.add(rlObjController.spawnRuneLiteObject(tileObjectId, topLeftCorner.dy(-y).dx(x)));
+				tiles[x][y] = rlObjController.spawnRuneLiteObject(tileObjectId, topLeftCornerWorld.dy(-y).dx(x));
 			}
 		}
 	}
 
-	private void spawnValidTiles(WorldPoint topLeftCorner)
+	private void spawnPlayerMoveTiles()
+	{
+		for (int x = 0; x < GRID_SIZE; x++)
+		{
+			for (int y = 0; y < GRID_SIZE; y++)
+			{
+				playerOneTiles[x][y] = rlObjController.spawnRuneLiteObject(
+					playerMoveTileId, topLeftCornerWorld.dy(-y).dx(x), false, playerOneColor, 33);
+
+				playerTwoTiles[x][y] = rlObjController.spawnRuneLiteObject(
+					playerMoveTileId, topLeftCornerWorld.dy(-y).dx(x), false, playerTwoColor, 33);
+			}
+		}
+	}
+
+	private void spawnValidTiles()
 	{
 		for (int x = 0; x < GRID_SIZE; x++)
 		{
 			for (int y = 0; y < GRID_SIZE; y++)
 			{
 				validTiles[x][y] = rlObjController.spawnRuneLiteObject(
-					validTileObjectId, topLeftCorner.dy(-y).dx(x), false,
+					validTileObjectId, topLeftCornerWorld.dy(-y).dx(x), false,
 					0, 50, 0, 9496
 				);
 			}

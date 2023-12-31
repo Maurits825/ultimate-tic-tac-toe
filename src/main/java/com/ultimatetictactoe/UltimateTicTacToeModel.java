@@ -35,14 +35,11 @@ public class UltimateTicTacToeModel
 	private State currentState = State.IDLE;
 	private Point currentGrid;
 
-	private Point topLeftCorner;
+	private WorldPoint topLeftCornerWorld;
 
 	public void initialize(WorldPoint playerWorldPosition)
 	{
-		WorldPoint topLeftCornerWorld = playerWorldPosition
-			.dx(-GRID_OFFSET + 1)
-			.dy(GRID_OFFSET - 1);
-		topLeftCorner = new Point(topLeftCornerWorld.getX(), topLeftCornerWorld.getY());
+		topLeftCornerWorld = playerWorldPosition.dx(-GRID_OFFSET + 1).dy(GRID_OFFSET - 1);
 
 		smallBoard = new int[GRID_SIZE][GRID_SIZE];
 		bigBoard = new int[SMALL_GRID_SIZE][SMALL_GRID_SIZE];
@@ -53,7 +50,7 @@ public class UltimateTicTacToeModel
 
 	public boolean playerOneMove(WorldPoint worldLocation)
 	{
-		return move(State.PLAYER1_MOVE, getGridCoordinates(worldLocation));
+		return move(State.PLAYER1_MOVE, UltimateTicTacToeUtils.getGridPointFromWorld(worldLocation, topLeftCornerWorld));
 	}
 
 	public boolean playerOneMove(Point point)
@@ -63,7 +60,7 @@ public class UltimateTicTacToeModel
 
 	public boolean playerTwoMove(WorldPoint worldLocation)
 	{
-		return move(State.PLAYER2_MOVE, getGridCoordinates(worldLocation));
+		return move(State.PLAYER2_MOVE, UltimateTicTacToeUtils.getGridPointFromWorld(worldLocation, topLeftCornerWorld));
 	}
 
 	public boolean playerTwoMove(Point point)
@@ -147,11 +144,12 @@ public class UltimateTicTacToeModel
 
 	private void updateBigBoard()
 	{
-		for (int bigX = 0; bigX < SMALL_GRID_SIZE; bigX++)
+		for (int x = 0; x < SMALL_GRID_SIZE; x++)
 		{
-			for (int bigY = 0; bigY < SMALL_GRID_SIZE; bigY++)
+			for (int y = 0; y < SMALL_GRID_SIZE; y++)
 			{
-				bigBoard[bigX][bigY] = getGridStatus(bigX, bigY);
+				//x y switch here??
+				bigBoard[y][x] = getGridStatus(x, y);
 			}
 		}
 	}
@@ -231,10 +229,5 @@ public class UltimateTicTacToeModel
 		{
 			currentGrid = null;
 		}
-	}
-
-	private Point getGridCoordinates(WorldPoint worldPoint)
-	{
-		return new Point(worldPoint.getX() - topLeftCorner.getX(), topLeftCorner.getY() - worldPoint.getY());
 	}
 }

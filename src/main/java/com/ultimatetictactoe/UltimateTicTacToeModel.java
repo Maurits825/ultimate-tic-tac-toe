@@ -16,6 +16,7 @@ public class UltimateTicTacToeModel
 		IDLE,
 		PLAYER1_WIN,
 		PLAYER2_WIN,
+		DRAW,
 		PLAYER1_MOVE,
 		PLAYER2_MOVE,
 	}
@@ -141,11 +142,31 @@ public class UltimateTicTacToeModel
 
 		updateBigBoard();
 		updateCurrentGrid(point);
+
+		int win = getBoardStatus(bigBoard, 0, 0);
+		if (win == PLAYER1_VALUE)
+		{
+			currentState = State.PLAYER1_WIN;
+		}
+		else if (win == PLAYER2_VALUE)
+		{
+			currentState = State.PLAYER2_WIN;
+		}
+		else if (win == DRAW_VALUE)
+		{
+			currentState = State.DRAW;
+		}
+
 		return true;
 	}
 
 	private boolean isValidMove(State playerMove, Point point)
 	{
+		if (currentState != State.PLAYER1_MOVE && currentState != State.PLAYER2_MOVE)
+		{
+			return false;
+		}
+
 		if (playerMove != currentState)
 		{
 			return false;
@@ -182,17 +203,16 @@ public class UltimateTicTacToeModel
 		{
 			for (int y = 0; y < SMALL_GRID_SIZE; y++)
 			{
-				bigBoard[x][y] = getGridStatus(x, y);
+				int startX = x * SMALL_GRID_SIZE;
+				int startY = y * SMALL_GRID_SIZE;
+				bigBoard[x][y] = getBoardStatus(smallBoard, startX, startY);
 			}
 		}
 	}
 
 	//TODO surely it can be cleaner
-	private int getGridStatus(int gridX, int gridY)
+	private int getBoardStatus(int[][] board, int startX, int startY)
 	{
-		int startX = gridX * SMALL_GRID_SIZE;
-		int startY = gridY * SMALL_GRID_SIZE;
-
 		boolean isGridFilled = true;
 
 		//check rol & col
@@ -202,21 +222,17 @@ public class UltimateTicTacToeModel
 			int colProduct = 1;
 			for (int y = 0; y < SMALL_GRID_SIZE; y++)
 			{
-				rowProduct *= smallBoard[startY + y][startX + x];
-				colProduct *= smallBoard[startX + x][startY + y];
+				rowProduct *= board[startY + y][startX + x];
+				colProduct *= board[startX + x][startY + y];
 			}
 
-			if (rowProduct == PLAYER1_WIN_VALUE || colProduct == PLAYER1_WIN_VALUE)
+			int winValue = getProductWin(rowProduct, colProduct);
+			if (winValue == PLAYER1_VALUE || winValue == PLAYER2_VALUE)
 			{
-				return PLAYER1_VALUE;
+				return winValue;
 			}
 
-			if (rowProduct == PLAYER2_WIN_VALUE || colProduct == PLAYER2_WIN_VALUE)
-			{
-				return PLAYER2_VALUE;
-			}
-
-			if (rowProduct == EMPTY_VALUE || colProduct == EMPTY_VALUE) //this only works for EMPTY_VALUE = 0
+			if (winValue == EMPTY_VALUE)
 			{
 				isGridFilled = false;
 			}
@@ -227,26 +243,42 @@ public class UltimateTicTacToeModel
 		int diag2Product = 1;
 		for (int i = 0; i < SMALL_GRID_SIZE; i++)
 		{
-			diag1Product *= smallBoard[startX + i][startY + i];
-			diag2Product *= smallBoard[startX + SMALL_GRID_SIZE - 1 - i][startY + i];
+			diag1Product *= board[startX + i][startY + i];
+			diag2Product *= board[startX + SMALL_GRID_SIZE - 1 - i][startY + i];
 		}
 
-		if (diag1Product == PLAYER1_WIN_VALUE || diag2Product == PLAYER1_WIN_VALUE)
+		int winValue = getProductWin(diag1Product, diag2Product);
+		if (winValue == PLAYER1_VALUE || winValue == PLAYER2_VALUE)
 		{
-			return PLAYER1_VALUE;
+			return winValue;
 		}
 
-		if (diag1Product == PLAYER2_WIN_VALUE || diag2Product == PLAYER2_WIN_VALUE)
-		{
-			return PLAYER2_VALUE;
-		}
-
-		if (diag1Product == EMPTY_VALUE || diag2Product == EMPTY_VALUE)
+		if (winValue == EMPTY_VALUE)
 		{
 			isGridFilled = false;
 		}
 
 		return isGridFilled ? DRAW_VALUE : EMPTY_VALUE;
+	}
+
+	private int getProductWin(int product1, int product2)
+	{
+		if (product1 == PLAYER1_WIN_VALUE || product2 == PLAYER1_WIN_VALUE)
+		{
+			return PLAYER1_VALUE;
+		}
+
+		if (product1 == PLAYER2_WIN_VALUE || product2 == PLAYER2_WIN_VALUE)
+		{
+			return PLAYER2_VALUE;
+		}
+
+		if (product1 == EMPTY_VALUE || product2 == EMPTY_VALUE)
+		{
+			return EMPTY_VALUE;
+		}
+
+		return DRAW_VALUE;
 	}
 
 	private void updateCurrentGrid(Point point)

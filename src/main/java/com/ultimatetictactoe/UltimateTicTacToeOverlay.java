@@ -43,21 +43,29 @@ public class UltimateTicTacToeOverlay extends OverlayPanel
 			.color(color)
 			.build());
 
-		String playerMove = "-";
+		String statusText = "-";
 		switch (plugin.getModel().getCurrentState())
 		{
 			case PLAYER1_MOVE:
-				playerMove = "Player 1 - " + PLAYER1_MOVE_MESSAGE;
+				statusText = "Player 1 - " + PLAYER1_MOVE_MESSAGE;
 				break;
 			case PLAYER2_MOVE:
-				playerMove = "Player 2 - " + PLAYER2_MOVE_MESSAGE;
+				statusText = "Player 2 - " + PLAYER2_MOVE_MESSAGE;
+				break;
+			case PLAYER1_WIN:
+				statusText = "Player 1 Win!";
+				break;
+			case PLAYER2_WIN:
+				statusText = "Player 2 Win!";
+				break;
+			case DRAW:
+				statusText = "Draw";
 				break;
 			default:
 				break;
 		}
-		panelComponent.getChildren().add(LineComponent.builder()
-			.left("Move:")
-			.right(playerMove)
+		panelComponent.getChildren().add(TitleComponent.builder()
+			.text(statusText)
 			.build());
 
 		return super.render(graphics);

@@ -12,4 +12,13 @@ public class UltimateTicTacToeUtils
 			topLeftCornerWorld.getY() - worldPoint.getY()
 		);
 	}
+
+	public static WorldPoint getWorldPointFromGrid(Point point, WorldPoint topLeftCornerWorld)
+	{
+		return new WorldPoint(
+			topLeftCornerWorld.getX() + point.getX(),
+			topLeftCornerWorld.getY() - point.getY(),
+			topLeftCornerWorld.getPlane()
+		);
+	}
 }

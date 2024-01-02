@@ -36,6 +36,7 @@ public class UltimateTicTacToeModel
 	private State currentState = State.IDLE;
 	private Point currentGrid;
 
+	@Getter
 	private WorldPoint topLeftCornerWorld;
 
 	public void initialize(WorldPoint playerWorldPosition)

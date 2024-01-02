@@ -47,4 +47,14 @@ public interface UltimateTicTacToeConfig extends Config
 	{
 		return Color.BLUE;
 	}
+
+	@ConfigItem(
+		keyName = "isBotEnabled",
+		name = "Enable random-bot",
+		description = "Player against a bot that plays a random valid move."
+	)
+	default boolean isBotEnabled()
+	{
+		return false;
+	}
 }

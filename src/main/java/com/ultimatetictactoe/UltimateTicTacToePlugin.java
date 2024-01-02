@@ -4,6 +4,8 @@ import com.google.inject.Provides;
 import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER1_MOVE_MESSAGE;
 import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER2_MOVE_MESSAGE;
 import java.awt.Color;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +13,14 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.MenuAction;
+import net.runelite.api.Point;
 import net.runelite.api.RuneLiteObject;
 import net.runelite.api.Tile;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -90,6 +94,17 @@ public class UltimateTicTacToePlugin extends Plugin
 				//TODO have to get location of other player here?
 				playerTwoMove(playerLocation);
 			}
+		}
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick tick)
+	{
+		if (config.isBotEnabled() && model.getCurrentState() == UltimateTicTacToeModel.State.PLAYER2_MOVE)
+		{
+			List<Point> validPoints = model.getValidTiles();
+			Point move = validPoints.get(ThreadLocalRandom.current().nextInt(0, validPoints.size()));
+			playerTwoMove(UltimateTicTacToeUtils.getWorldPointFromGrid(move, model.getTopLeftCornerWorld()));
 		}
 	}
 

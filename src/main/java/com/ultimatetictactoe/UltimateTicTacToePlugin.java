@@ -3,17 +3,20 @@ package com.ultimatetictactoe;
 import com.google.inject.Provides;
 import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER1_MOVE_MESSAGE;
 import static com.ultimatetictactoe.UltimateTicTacToeConstant.PLAYER2_MOVE_MESSAGE;
+import java.awt.Color;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.GameState;
 import net.runelite.api.MenuAction;
 import net.runelite.api.RuneLiteObject;
 import net.runelite.api.Tile;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ClientTick;
+import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -23,6 +26,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
+import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.Text;
 
 @Slf4j
@@ -90,19 +94,28 @@ public class UltimateTicTacToePlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onGameStateChanged(GameStateChanged gameStateChanged)
+	{
+		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
+		{
+			resetGame();
+		}
+	}
+
+	@Subscribe
 	public void onClientTick(ClientTick clientTick)
 	{
 		if (!client.isMenuOpen())
 		{
 			client.createMenuEntry(-1)
 				.setOption("Play")
-				.setTarget(PLAYER1_MOVE_MESSAGE)
+				.setTarget(ColorUtil.wrapWithColorTag(PLAYER1_MOVE_MESSAGE, config.playerOneColor()))
 				.setType(MenuAction.RUNELITE)
 				.onClick(c -> playerOneMove(client.getSelectedSceneTile().getWorldLocation()));
 
 			client.createMenuEntry(-2)
 				.setOption("Play")
-				.setTarget(PLAYER2_MOVE_MESSAGE)
+				.setTarget(ColorUtil.wrapWithColorTag(PLAYER2_MOVE_MESSAGE, config.playerTwoColor()))
 				.setType(MenuAction.RUNELITE)
 				.onClick(c -> playerTwoMove(client.getSelectedSceneTile().getWorldLocation()));
 		}

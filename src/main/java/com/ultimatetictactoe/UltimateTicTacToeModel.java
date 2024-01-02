@@ -162,6 +162,16 @@ public class UltimateTicTacToeModel
 
 	private boolean isValidMove(State playerMove, Point point)
 	{
+		if (point.getX() < 0 || point.getX() >= GRID_SIZE)
+		{
+			return false;
+		}
+
+		if (point.getY() < 0 || point.getY() >= GRID_SIZE)
+		{
+			return false;
+		}
+
 		if (currentState != State.PLAYER1_MOVE && currentState != State.PLAYER2_MOVE)
 		{
 			return false;
@@ -222,7 +232,7 @@ public class UltimateTicTacToeModel
 			int colProduct = 1;
 			for (int y = 0; y < SMALL_GRID_SIZE; y++)
 			{
-				rowProduct *= board[startY + y][startX + x];
+				rowProduct *= board[startX + y][startY + x];
 				colProduct *= board[startX + x][startY + y];
 			}
 
